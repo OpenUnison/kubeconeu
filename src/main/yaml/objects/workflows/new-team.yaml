@@ -1,0 +1,139 @@
+---
+apiVersion: openunison.tremolo.io/v1
+kind: Workflow
+metadata:
+  name: new-team
+  namespace: openunison
+spec:
+  description: Create New Team
+  inList: false
+  label: Create New Team
+  orgId: 04901973-5f4c-46d9-9e22-55e88e168776
+  tasks: |-
+           - taskType: customTask
+             className: com.tremolosecurity.provisioning.customTasks.CopyFromUserToRequest
+             params:
+               attribute:
+               - teamname
+               keepInUser: "false"
+
+           - taskType: customTask
+             className: com.tremolosecurity.provisioning.customTasks.LoadAttributes
+             params:
+               nameAttr: uid
+               name: 
+               - givenname
+               - sn
+               - mail
+
+           
+
+
+           - taskType: approval
+             emailTemplate: A new team has been requested
+             mailAttr: mail
+             failureEmailSubject: Team not approved
+             failureEmailMsg: |-
+               Because:
+               ${reason}
+             label: Create New Team - $teamname$
+             approvers:
+             - scope: group
+               constraint: cn=administrators,ou=groups,ou=shadow,o=Tremolo
+             onSuccess:
+             - taskType: customTask
+               className: com.tremolosecurity.provisioning.customTasks.AddGroupToStore
+               params:
+                 target: jitdb
+                 name: approvers-k8s-$teamname$
+                 attributes:
+                 - unison.group.create.sql=INSERT INTO localGroups (name,description) VALUES (?,?)
+                 - unison.group.create.param.2=Approve access to $teamname$
+             - taskType: customTask
+               className: com.tremolosecurity.provisioning.customTasks.AddGroupToStore
+               params:
+                 target: jitdb
+                 name: k8s-namespace-administrators-$teamname$
+                 attributes:
+                 - unison.group.create.sql=INSERT INTO localGroups (name,description) VALUES (?,?)
+                 - unison.group.create.param.2=Manage kubernetes namespaces owned by $teamname$
+             - taskType: customTask
+               className: com.tremolosecurity.provisioning.customTasks.AddGroupToStore
+               params:
+                 target: jitdb
+                 name: k8s-namespace-viewer-$teamname$
+                 attributes:
+                 - unison.group.create.sql=INSERT INTO localGroups (name,description) VALUES (?,?)
+                 - unison.group.create.param.2=View kubernetes namespace $teamname$
+                 
+             - taskType: mapping
+               strict: true
+               map:
+                 - targetAttributeName: uid
+                   targetAttributeSource: uid
+                   sourceType: user
+               onSuccess:
+               - taskType: addGroup
+                 name: approvers-k8s-$teamname$
+                 remove: false
+               - taskType: addGroup
+                 name: k8s-namespace-administrators-$teamname$
+                 remove: false
+               - taskType: provision
+                 sync: false
+                 target: jitdb
+                 setPassword: false
+                 onlyPassedInAttributes: false
+                 attributes: ["uid"]
+
+             - taskType: customTask
+               className: com.tremolosecurity.provisioning.tasks.CreateK8sObject
+               params:
+                 targetName: k8s
+                 template: |-
+                    apiVersion: rbacmanager.reactiveops.io/v1beta1
+                    kind: RBACDefinition
+                    metadata:
+                      name: $teamname$-admin
+                    rbacBindings:
+                      - name: $teamname$-admin
+                        subjects:
+                          - kind: Group
+                            name: k8s-namespace-administrators-$teamname$
+                        roleBindings:
+                          - clusterRole: admin
+                            namespaceSelector:
+                              matchLabels:
+                                team: $teamname$
+                 kind: RBACDefinition
+                 url: /apis/rbacmanager.reactiveops.io/v1beta1/rbacdefinitions
+                 srcType: yaml
+
+             - taskType: customTask
+               className: com.tremolosecurity.provisioning.tasks.CreateK8sObject
+               params:
+                 targetName: k8s
+                 template: |-
+                    apiVersion: rbacmanager.reactiveops.io/v1beta1
+                    kind: RBACDefinition
+                    metadata:
+                      name: $teamname$-view
+                    rbacBindings:
+                      - name: $teamname$-view
+                        subjects:
+                          - kind: Group
+                            name: k8s-namespace-viewer-$teamname$
+                        roleBindings:
+                          - clusterRole: view
+                            namespaceSelector:
+                              matchLabels:
+                                team: $teamname$
+                 kind: RBACDefinition
+                 url: /apis/rbacmanager.reactiveops.io/v1beta1/rbacdefinitions
+                 srcType: yaml
+                   
+
+             - taskType: notifyUser
+               subject: Team created
+               mailAttrib: mail
+               msg: Your team has been created

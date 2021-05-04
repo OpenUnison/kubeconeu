@@ -1,0 +1,80 @@
+network:
+  openunison_host: "k8sou.apps.192-168-2-126.nip.io"
+  dashboard_host: "k8sdb.apps.192-168-2-126.nip.io"
+  api_server_host: "k8sapi.apps.192-168-2-126.nip.io"
+  session_inactivity_timeout_seconds: 900
+  k8s_url: https://k8s-installer-master.tremolo.lan:6443
+  
+
+cert_template:
+  ou: "Kubernetes"
+  o: "MyOrg"
+  l: "My Cluster"
+  st: "State of Cluster"
+  c: "MyCountry"
+
+image: "docker.lab.tremolo.dev/lab/kubeconeu"
+amq_image: "docker.io/tremolosecurity/activemq-docker:latest"
+myvd_config_path: "WEB-INF/myvd.conf"
+k8s_cluster_name: kubernetes
+enable_impersonation: true
+
+dashboard:
+  namespace: "kubernetes-dashboard"
+  cert_name: "kubernetes-dashboard-certs"
+  label: "k8s-app=kubernetes-dashboard"
+  service_name: kubernetes-dashboard
+certs:
+  use_k8s_cm: false
+
+#trusted_certs: []
+
+trusted_certs:
+  - name: ldaps
+    pem_b64: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURVVENDQWptZ0F3SUJBZ0lFUk5lajF6QU5CZ2txaGtpRzl3MEJBUXNGQURCWk1Rd3dDZ1lEVlFRR0V3TmsKWlhZeEREQUtCZ05WQkFnVEEyUmxkakVNTUFvR0ExVUVCeE1EWkdWMk1Rd3dDZ1lEVlFRS0V3TmtaWFl4RERBSwpCZ05WQkFzVEEyUmxkakVSTUE4R0ExVUVBeE1JWVhCaFkyaGxaSE13SGhjTk1qRXdOVEEwTURBeE5EVXhXaGNOCk16RXdOVEF5TURBeE5EVXhXakJaTVF3d0NnWURWUVFHRXdOa1pYWXhEREFLQmdOVkJBZ1RBMlJsZGpFTU1Bb0cKQTFVRUJ4TURaR1YyTVF3d0NnWURWUVFLRXdOa1pYWXhEREFLQmdOVkJBc1RBMlJsZGpFUk1BOEdBMVVFQXhNSQpZWEJoWTJobFpITXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFEVzU3VHoxc1RFClQrMzJnNFdEbU5uY2F2b2RuQjh1SlN4MVNFUnRDbWFUZ0ZaZDkvekRnNFVBQ3RVV0tVd0xkY25TOFJvVHRmUGMKZVh6RGFJMWk2SGVYVU4yTVBnQTJFbE9yTndPQ0Q3ZFI5REF0Ty9BdmpucDV5RkFYTVZuWXRYSEZLM1NyNXMyNgpJa0RXcmlqajFLblk0cVBzazhrb1hpcDM2VEpaNXR5MVBkd05WZkdOaGYzRWJMWElKZDZsK2xYNXVXeVE1dThDCkxOQWlmcFVVOC9kdHlHSnUvR015dkVvOEdTRVVJYTdFYnBlQis0aGZxd1liQmhBMXFyUS9takJBZkw0Z3dUVlUKMzg0eFNnYkIrd1FWVkJmY3hKTk9IbkNLNERoTi9uTVZYdHVWR28rSHJxRTFaWWtpSEFQdVJ3ek5yK1ZlT09IOApzNG81SmU5eHhuRkpBZ01CQUFHaklUQWZNQjBHQTFVZERnUVdCQlRvQ0R3WGpnZ2w1WUwvbnNiUmN0c1dnQkc1CnlEQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFlV2lndHlwMURQVzE2RHY3eUI0T2hUa3VQTWxDMmpRL2JRR2EKMmRUQTV1RWZHTk5oT016V0IvYnFTcWl4ZFlobDlvOExWZ2Izd2lDbWxsVjNrNEd0S1N6MmJQY3VYNEpKbDVOegppMFFmU0ZJam9xM0tYUjFLTlp0bDZxam1iMlorVDJTbkltSVlnSEpnMm4yeG9lK1p2QTdFZjZQWGtZM1lGb0ZpClJxZWxqUGdnUE9iVmJKN3B2T24vaHk4emowdUlJSmhsajNRQnIvQXE1OXFzbytoN2NrZGViUzVVSU5iVGE3WmQKZnNRVTZXemZ4Y3dWSnJabFNCM2kyT0ROSTFWaTFKbHBEZDBVdHNtVTRyRjVOSi9raUhsekhCYUlsdWRMSWd6RgpWMDF5aTQ2Y3RhQU5iUWNyUng3WDVZZ1lmRnZSa3dBN1F1UWxMK1ErU1VKbTdoRkM2Zz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  
+active_directory:
+  base: ou=Users,DC=domain,dc=COM
+  host: apacheds-dev.apacheds.svc
+  port: "10636"
+  bind_dn: "cn=ou_svc_account,ou=Users,DC=domain,DC=com"
+  con_type: ldaps
+  srv_dns: "false"
+
+database:
+  hibernate_dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+  quartz_dialect: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+  driver: com.mysql.jdbc.Driver
+  url: jdbc:mysql://mariadb.mariadb.svc:3306/unison
+  user: root
+  validation: SELECT 1
+
+smtp:
+  host: blackhole.blackhole.svc.cluster.local
+  port: 1025
+  user: "none"
+  from: donotreply@domain.com
+  tls: false
+
+monitoring:
+  prometheus_service_account: system:serviceaccount:monitoring:prometheus-k8s
+
+network_policies:
+  enabled: false
+  ingress:
+    enabled: true
+    labels:
+      app.kubernetes.io/name: ingress-nginx
+  monitoring:
+    enabled: true
+    labels:
+      app.kubernetes.io/name: monitoring
+  apiserver:
+    enabled: true
+    labels:
+      app.kubernetes.io/name: kube-system
+
+services:
+  enable_tokenrequest: false
+  token_request_audience: api
+  token_request_expiration_seconds: 600

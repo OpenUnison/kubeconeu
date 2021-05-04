@@ -1,0 +1,56 @@
+---
+apiVersion: openunison.tremolo.io/v1
+kind: Workflow
+metadata:
+  name: new-k8s-namespace-kceu
+  namespace: openunison
+spec:
+  description: Create New Namespace
+  inList: false
+  label: Create New Namespace
+  orgId: 04901973-5f4c-46d9-9e22-55e88e168776
+  tasks: |-
+           - taskType: customTask
+             className: com.tremolosecurity.provisioning.customTasks.CopyFromUserToRequest
+             params:
+               attribute:
+               - nameSpace
+               - teamname
+               keepInUser: "false"
+
+           - taskType: customTask
+             className: com.tremolosecurity.provisioning.customTasks.LoadAttributes
+             params:
+               nameAttr: uid
+               name: 
+               - givenname
+               - sn
+               - mail
+
+           
+           # create namespace with team label
+           - taskType: customTask
+             className: com.tremolosecurity.provisioning.tasks.CreateK8sObject
+             params:
+               targetName: k8s
+               template: |-
+                 kind: Namespace
+                 apiVersion: v1
+                 metadata:
+                   name: "$nameSpace$"
+                   labels:
+                     name: "$nameSpace$"
+                     team: $teamname$
+               kind: Namespace
+               url: /api/v1/namespaces
+               srcType: yaml
+               
+
+
+             
+               
+
+           - taskType: notifyUser
+             subject: Namespace created
+             mailAttrib: mail
+             msg: Your namespace has been created

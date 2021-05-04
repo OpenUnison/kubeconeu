@@ -1,0 +1,83 @@
+apiVersion: openunison.tremolo.io/v1
+kind: Workflow
+metadata:
+  name: k8s-team-admin
+  namespace: openunison
+  annotations:
+    oldorg: "04901973-5f4c-46d9-9e22-55e88e168776"
+spec:
+  description: k8s-team-admin
+  inList: false
+  label: team administrator
+  orgId: 04901973-5f4c-46d9-9e22-55e88e168776
+  tasks: |-
+           - taskType: customTask
+             className: com.tremolosecurity.provisioning.customTasks.LoadAttributes
+             params:
+               nameAttr: uid
+               name: 
+               - givenname
+               - sn
+               - mail
+
+           - taskType: approval
+             emailTemplate: Approve administrator access to $teamname$
+             mailAttr: mail
+             failureEmailSubject: Request denied
+             failureEmailMsg: |-
+               Because:
+               ${reason}
+             label: Approve administrator access for $teamname$ team
+             approvers:
+             - scope: group
+               constraint: cn=approvers-k8s-$teamname$,ou=groups,ou=shadow,o=Tremolo
+             onSuccess:
+             - taskType: mapping
+               strict: true
+               map:
+                 - targetAttributeName: uid
+                   targetAttributeSource: uid
+                   sourceType: user
+                 - targetAttributeName: mail
+                   targetAttributeSource: mail
+                   sourceType: user
+               onSuccess:
+               - taskType: addGroup
+                 name: k8s-namespace-administrators-$teamname$
+                 remove: false
+               - taskType: provision
+                 sync: false
+                 target: jitdb
+                 setPassword: false
+                 onlyPassedInAttributes: false
+                 attributes: ["uid"]
+               - taskType: notifyUser
+                 subject: Admin access to $cluster$ $name$ approved
+                 mailAttrib: mail
+                 msg: Your access has been approved
+             onFailure:
+             - taskType: mapping
+               strict: true
+               map:
+                 - targetAttributeName: sub
+                   targetAttributeSource: uid
+                   sourceType: user
+                 - targetAttributeName: mail
+                   targetAttributeSource: mail
+                   sourceType: user
+               onSuccess:
+                - taskType: customTask
+                  className: com.tremolosecurity.provisioning.customTasks.LoadGroupsFromTarget
+                  params:
+                    target: jitdb
+                    nameAttr: sub
+                  
+                - taskType: addGroup
+                  name: k8s-namespace-administrators-$teamname$
+                  remove: true
+                - taskType: provision
+                  sync: true
+                  target: jitdb
+                  setPassword: false
+                  onlyPassedInAttributes: false
+                  attributes: ["uid"]

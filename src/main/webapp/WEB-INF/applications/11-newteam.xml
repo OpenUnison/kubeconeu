@@ -1,0 +1,94 @@
+<application name="scale" azTimeoutMillis="30000" >
+  <urls>
+
+    
+    <url regex="false" authChain="LoginService" overrideHost="false" overrideReferer="false">
+                <host>#[OU_HOST]</host>
+                <filterChain>
+                    <filter class="com.tremolosecurity.scalejs.register.ws.ScaleRegister">
+                        <param name="displayNameAttribute" value="mail"/>
+                        <param name="uidAttributeName" value="uid"/>
+                        <param name="workflowName" value="new-team"/>
+                        <param name="logoutURL" value="/logout"/>
+                        <param name="homeURL" value="/"/>
+                        <param name="frontPage.text" value="Use this from to create a new team"/>
+                        <param name="frontPage.title" value="Create New Team"/>
+                        <param name="preSetPassword" value="false"/>
+                        <param name="requireReason" value="true"/>
+                        <param name="requireReCaptcha" value="false"/>
+                        <param name="rcSiteKey" value=""/>
+                        <param name="rcSecret" value=""/>
+                        <param name="requireTermsAndConditions" value="false"/>
+                        <param name="termsAndConditionsText" value=""/>
+                        <param name="useCallWorkflowClass" value="false"/>
+                        <param name="callWorkflowClassName" value="com.tremolosecurity.scalejs.K8sProjectCheck"/>
+                        <param name="submitLoggedInUser" value="true"/>
+                        
+                        <param name="attributeNames" value="teamname"/>
+                        <param name="teamname.displayName" value="Team Name" />
+                        <param name="teamname.readOnly" value="false" />
+                        <param name="teamname.required" value="true"/>
+                        <param name="teamname.regEx" value=".*" />
+                        <param name="teamname.regExFailedMsg" value="invalid" />
+                        <param name="teamname.minChars" value="0" />
+                        <param name="teamname.maxChars" value="50" />
+                        <param name="teamname.unique" value="false" />
+                        <param name="teamname.type" value="text" />
+                        
+                    </filter>
+                </filterChain>
+                <uri>/newteam/register</uri>
+                <results>
+                    <auSuccess></auSuccess>
+                    <auFail>Default Login Failure</auFail>
+                    <azSuccess></azSuccess>
+                    <azFail>PrivilegedRequest</azFail>
+                </results>
+                <azRules>
+                    <rule scope="dn" constraint="o=Tremolo"/>
+                </azRules>
+            </url>
+
+            
+
+            <url regex="false" authChain="LoginService" overrideHost="false" overrideReferer="false">
+                <host>#[OU_HOST]</host>
+                <filterChain>
+
+                </filterChain>
+                <uri>/newteam</uri>
+
+                <results>
+                    <auSuccess></auSuccess>
+                    <auFail>Default Login Failure</auFail>
+                    <azSuccess></azSuccess>
+                    <azFail>PrivilegedRequest</azFail>
+                </results>
+                <azRules>
+                    <rule scope="dn" constraint="o=Tremolo"/>
+                </azRules>
+            </url>
+
+            
+
+
+  </urls>
+  <!-- The cookie configuration determines how sessions are managed for this application -->
+  <cookieConfig>
+    <!-- The name of the session cookie for this application.  Applications that want SSO between them should have the same cookie name -->
+      <sessionCookieName>tremolosession</sessionCookieName>
+    <!-- The domain of component of the cookie -->
+    <domain>#[OU_HOST]</domain>
+    <!-- The URL that OpenUnison will interpret as the URL to end the session -->
+    <logoutURI>/logout</logoutURI>
+    <!-- The name of the AES-256 key in the keystore to use to encrypt this session -->
+    <keyAlias>session-unison</keyAlias>
+    <!-- If set to true, the cookie's secure flag is set to true and the browser will only send this cookie over https connections -->
+    <secure>true</secure>
+    <httpOnly>true</httpOnly>
+    <!-- The number of secconds that the session should be allowed to be idle before no longer being valid -->
+    <timeout>#[SESSION_INACTIVITY_TIMEOUT_SECONDS]</timeout>
+    <!-- required but ignored -->
+    <scope>-1</scope>
+  </cookieConfig>
+</application>

@@ -1,0 +1,27 @@
+---
+apiVersion: openunison.tremolo.io/v1
+kind: Workflow
+metadata:
+  name: control-plane-namespace-admins
+  namespace: openunison
+spec:
+  description: ClusterRole admin for the $teamname$ team
+  inList: true
+  label: $teamname$ team Administrator
+  orgId: org-cluster-control-plane-admins
+  dynamicConfiguration:
+    dynamic: true
+    className: com.tremolosecurity.provisioning.dynamicwf.DBTargetDynamicWF
+    params:
+    - name: target
+      value: jitdb
+    - name: sql
+      value: select substring(name,15) as teamname from localGroups where name like 'approvers-k8s-%';
+  tasks: |-
+           - taskType: addAttribute
+             name: cluster
+             value: k8s
+             remove: false
+             addToRequest: true
+           - taskType: callWorkflow
+             name: k8s-team-admin

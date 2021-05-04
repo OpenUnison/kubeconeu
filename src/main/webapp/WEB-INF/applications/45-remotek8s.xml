@@ -1,0 +1,42 @@
+<application name="remotek8s" isApp="false" azTimeoutMillis="30000">
+        <results/>
+        <urls>
+            <url regex="false">
+                <host>#[OU_HOST]</host>
+                <filterChain/>
+                <uri>/auth/idp/remotek8s</uri>
+                <results>
+                    <auSuccess></auSuccess>
+                    <auFail>Default Login Failure</auFail>
+                    <azSuccess></azSuccess>
+                    <azFail>Default Login Failure</azFail>
+                </results>
+                <azRules>
+                    <rule scope="dn" constraint="o=None"/>
+                </azRules>
+                <idp className="com.tremolosecurity.idp.providers.OpenIDConnectIdP">
+                    <params name="jwtSigningKey" value="remote-k8s-idp-sig"/>
+                    <params name="sessionStoreClassName" value="com.tremolosecurity.idp.providers.oidc.none.NoneBackend"/>
+                    
+                    <mappings strict="true">
+                        
+                    </mappings>
+                    <trusts>
+                        
+                        
+                        
+                    </trusts>
+                </idp>
+            </url>
+        </urls>
+        <cookieConfig>
+            <sessionCookieName>tremolosession</sessionCookieName>
+            <domain>#[OU_HOST]</domain>
+            <scope>-1</scope>
+            <logoutURI>/logout</logoutURI>
+            <keyAlias>session-unison</keyAlias>
+            <secure>true</secure>
+            <httpOnly>true</httpOnly>
+            <timeout>#[SESSION_INACTIVITY_TIMEOUT_SECONDS]</timeout>
+        </cookieConfig>
+    </application>

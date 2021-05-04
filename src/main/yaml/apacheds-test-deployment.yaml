@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: apacheds-dev
+    app.kubernetes.io/instance: apacheds
+  name: apacheds-dev
+  namespace: apacheds
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: apacheds-dev
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: apacheds-dev
+    spec:
+      containers:
+      - env:
+        - name: JAVA_OPTS
+          value: -Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom
+            -Xms2048m -Xmx2048m
+        - name: fortriggerupdates
+          value: changeme
+        - name: APACHEDS_ROOT_PASSWORD
+          value: start123
+        - name: APACHEDS_TLS_KS_PWD
+          value: start123
+        - name: DN
+          value: DC=domain,DC=com
+        - name: OBJECT_CLASS
+          value: domain
+        - name: LDIF_FILE
+          value: /etc/apacheds-data/data.ldif
+        image: docker.io/tremolosecurity/apacheds:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 10
+          initialDelaySeconds: 120
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 10389
+          timeoutSeconds: 10
+        name: apacheds
+        ports:
+        - containerPort: 10389
+          name: ldap
+          protocol: TCP
+        - containerPort: 10636
+          name: ldaps
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          tcpSocket:
+            port: 10389
+          timeoutSeconds: 10
+        resources:
+          limits:
+            memory: 1G
+          requests:
+            memory: 1G
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/apacheds
+          name: secret-volume
+          readOnly: true
+        - mountPath: /etc/apacheds-data
+          name: data-volume
+          readOnly: true
+        - mountPath: /var/apacheds
+          name: local-data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: secret-volume
+        secret:
+          defaultMode: 420
+          secretName: apacheds-ks
+      - configMap:
+          defaultMode: 420
+          name: test-users
+        name: data-volume
+      - emptyDir: {}
+        name: local-data

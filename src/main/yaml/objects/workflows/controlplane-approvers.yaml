@@ -1,0 +1,25 @@
+apiVersion: openunison.tremolo.io/v1
+kind: Workflow
+metadata:
+  name: controlplane-approvers
+  namespace: openunison
+spec:
+  description: Add new team approvers
+  inList: true
+  label: $namespaceName$ Team Approver
+  orgId: org-cluster-control-plane-approvers
+  dynamicConfiguration:
+    dynamic: true
+    className: com.tremolosecurity.scalejs.ListClusterApproverGroups
+    params:
+    - name: cluster
+      value: k8s
+    - name: groupsAttribute
+      value: groups
+    - name: groupsAreDN
+      value: "false"
+    - name: groupPrefix
+      value: approvers-
+  tasks: |-
+           - taskType: callWorkflow
+             name: k8s-add-approver
